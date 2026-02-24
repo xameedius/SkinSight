@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>{% block title %}SkinSight{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  {% load static %}
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Skin-tone theme tokens -->
+  <style>
+    :root{
+      --skin-50:  255 247 237;
+      --skin-100: 255 237 213;
+      --skin-200: 254 215 170;
+      --skin-300: 253 186 116;
+      --skin-400: 251 146  60;
+      --ink:      17  24  39;
+    }
+
+
+  /* Make Django default inputs look premium */
+  .auth-form input[type="text"],
+  .auth-form input[type="email"],
+  .auth-form input[type="password"]{
+    width:100%;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,.12);
+    background: white;
+    padding: 12px 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgb(15 23 42);
+    outline: none;
+  }
+  .auth-form input:focus{
+    border-color: rgba(0,0,0,.30);
+    box-shadow: 0 0 0 4px rgba(253,186,116,.35); /* skin glow */
+  }
+  .auth-form ul.errorlist{
+    margin-top: 6px;
+    color: rgb(220 38 38);
+    font-size: 14px;
+    font-weight: 700;
+    list-style: none;
+    padding: 0;
+  }
+
+  </style>
+
+  <link rel="icon" href="{% static 'predictor/favicon.png' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="min-h-screen bg-[rgb(var(--skin-50))] text-slate-900 text-[17px] leading-relaxed">
+  <!-- Background decoration -->
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
+    <div class="absolute -top-44 -right-44 h-[38rem] w-[38rem] rounded-full bg-[rgb(var(--skin-200))] blur-3xl opacity-45"></div>
+    <div class="absolute -bottom-44 -left-44 h-[38rem] w-[38rem] rounded-full bg-[rgb(var(--skin-100))] blur-3xl opacity-55"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50">
+    <div class="border-b border-black/10 bg-white/85 backdrop-blur">
+      <div class="w-full px-4 sm:px-6 lg:px-10 py-4">
+
+        <!-- TOP: centered logo/brand -->
+        <div class="flex flex-col items-center text-center gap-2">
+          <a href="{% url 'home' %}" class="group inline-flex items-center gap-4">
+            <div class="relative">
+              <div class="absolute -inset-3 rounded-3xl bg-[rgb(var(--skin-100))] blur-md opacity-80"></div>
+              <img
+                src="{% static 'predictor/favicon.png' %}"
+                alt="SkinSight Logo"
+                class="relative h-20 w-20 sm:h-24 sm:w-24 rounded-3xl bg-white p-2 shadow-lg ring-1 ring-black/10 object-contain"
+              >
+            </div>
+
+            <div class="leading-tight text-left">
+              <div class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+                SkinSight
+              </div>
+              <div class="mt-1 text-base sm:text-lg font-semibold text-slate-800">
+                AI-powered skin condition identifier
+              </div>
+
+            </div>
+          </a>
+
+
+        </div>
+
+        <!-- BOTTOM: centered navigation -->
+        <div class="mt-4 flex justify-center">
+          <nav class="flex flex-wrap items-center justify-center gap-3">
+            {% if request.user.is_authenticated %}
+
+            <a href="{% url 'overview' %}"
+              class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm sm:text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+              Overview
+            </a>
+              <a href="{% url 'home' %}"
+                 class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-7 py-3 text-base font-extrabold text-slate-900 shadow-sm hover:bg-black/5 transition">
+                New Scan
+              </a>
+
+              <a href="{% url 'history' %}"
+                 class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-7 py-3 text-base font-extrabold text-slate-900 shadow-sm hover:bg-black/5 transition">
+                History
+              </a>
+
+            <a href="{% url 'about' %}"
+              class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm sm:text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+              About
+            </a>
+
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit"
+                  class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-7 py-3 text-base font-extrabold text-white shadow-sm hover:bg-slate-800 transition">
+                  Logout
+                </button>
+              </form>
+            {% else %}
+
+            <a href="{% url 'overview' %}"
+              class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm sm:text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+              Overview
+            </a>
+
+            <a href="{% url 'about' %}"
+              class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm sm:text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+              About
+            </a>
+
+              <a href="{% url 'login' %}"
+                 class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-7 py-3 text-base font-extrabold text-slate-900 shadow-sm hover:bg-black/5 transition">
+                Login
+              </a>
+
+              <a href="{% url 'signup' %}"
+                 class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-7 py-3 text-base font-extrabold text-white shadow-sm hover:bg-slate-800 transition">
+                Sign up
+              </a>
+            {% endif %}
+          </nav>
+        </div>
+
+      </div>
+
+      <!-- Skin-tone accent strip -->
+      <div class="h-1.5 w-full bg-gradient-to-r from-[rgb(var(--skin-200))] via-[rgb(var(--skin-100))] to-[rgb(var(--skin-200))]"></div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="relative w-full px-4 sm:px-6 lg:px-10 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="relative border-t border-black/10 bg-white/70 backdrop-blur">
+    <div class="w-full px-4 sm:px-6 lg:px-10 py-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+      <div class="text-base font-semibold text-slate-800">© 2026 SkinSight • Prototype by Sameed Ahmed</div>
+      <div class="text-base text-slate-700">
+        Disclaimer: Not medical advice. If you’re concerned, consult a licensed clinician.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

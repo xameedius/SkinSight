@@ -1,0 +1,314 @@
+{% extends "predictor/layout.html" %}
+{% load static %}
+{% block title %}Result - SkinSight{% endblock %}
+{% block extra_head %}
+  <script defer src="{% static 'predictor/result.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Full-screen flakes overlay (keeps your existing IDs for result.js) -->
+<div id="resultConfettiOverlay" class="hidden fixed inset-0 z-[9999] pointer-events-none">
+  <canvas id="resultConfettiCanvas" class="absolute inset-0 h-full w-full"></canvas>
+</div>
+
+<div class="space-y-8">
+
+  <!-- Title + meta -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">Scan Result</h1>
+      <p class="mt-2 text-base sm:text-lg font-semibold text-slate-800">
+        Saved on <span class="font-black text-slate-900">{{ pred.created_at }}</span>
+      </p>
+      <p class="mt-1 text-base text-slate-700">
+        Review the assessment, confidence, and next-step guidance.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <a href="{% url 'home' %}"
+         class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-6 py-3 text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+        New Scan
+      </a>
+      <a href="{% url 'history' %}"
+         class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-6 py-3 text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+        History
+      </a>
+    </div>
+  </div>
+
+  <!-- Status dashboard -->
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <!-- Urgency -->
+    <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+      <p class="text-sm font-bold text-slate-700">Urgency</p>
+      {% if pred.urgency == "urgent" %}
+        <p class="mt-2 text-2xl font-black text-red-700">Urgent</p>
+        <p class="mt-2 text-base text-slate-800">Consider medical review soon, especially if symptoms are worsening.</p>
+      {% elif pred.urgency == "soon" %}
+        <p class="mt-2 text-2xl font-black text-amber-700">Soon</p>
+        <p class="mt-2 text-base text-slate-800">Monitor closely and seek care if it persists or spreads.</p>
+      {% else %}
+        <p class="mt-2 text-2xl font-black text-emerald-700">Monitor</p>
+        <p class="mt-2 text-base text-slate-800">Likely manageable with basic care and monitoring.</p>
+      {% endif %}
+    </div>
+
+    <!-- Contagious -->
+    <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+      <p class="text-sm font-bold text-slate-700">Contagious</p>
+      {% if pred.contagious %}
+        <p class="mt-2 text-2xl font-black text-sky-700">Yes</p>
+        <p class="mt-2 text-base text-slate-800">Avoid close skin contact and don’t share towels/clothing.</p>
+      {% else %}
+        <p class="mt-2 text-2xl font-black text-slate-900">No</p>
+        <p class="mt-2 text-base text-slate-800">No contagious flag detected for this result.</p>
+      {% endif %}
+    </div>
+
+    <!-- See doctor -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-100))] p-6 shadow-sm">
+      <p class="text-sm font-bold text-slate-800">See a doctor</p>
+      {% if pred.see_doctor %}
+        <p class="mt-2 text-2xl font-black text-slate-900">Yes</p>
+        <p class="mt-2 text-base text-slate-800">This may benefit from professional evaluation.</p>
+      {% else %}
+        <p class="mt-2 text-2xl font-black text-slate-900">No</p>
+        <p class="mt-2 text-base text-slate-800">Try self-care first, and seek care if it doesn’t improve.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="grid grid-cols-1 gap-7 lg:grid-cols-5">
+
+    <!-- LEFT: Image + confidence donut + quick insights -->
+<div class="lg:col-span-2 space-y-7">
+  <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+    <h2 class="text-xl font-extrabold text-slate-900">Uploaded image</h2>
+    <p class="mt-2 text-base text-slate-700">
+      Best results come from bright lighting and sharp focus.
+    </p>
+
+    <img
+      src="{{ pred.image.url }}"
+      alt="Uploaded skin image"
+      class="mt-5 w-full rounded-3xl border border-black/10 object-cover"
+    />
+  </div>
+
+  <!-- Confidence + Quick Insights (fills the empty space nicely) -->
+  <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-sm font-bold text-slate-700">Confidence</p>
+        <p class="mt-2 text-3xl font-black text-slate-900" data-confidence-text>
+          {{ pred.confidence|floatformat:3 }}
+        </p>
+        <p class="mt-2 text-base font-semibold text-slate-700">
+          <span id="confLabel">Interpreting…</span>
+        </p>
+      </div>
+
+      <!-- Donut -->
+      <div class="shrink-0">
+        <div class="relative h-28 w-28 sm:h-32 sm:w-32">
+          <svg viewBox="0 0 120 120" class="h-full w-full">
+            <!-- track -->
+            <circle cx="60" cy="60" r="46"
+                    fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="12" />
+            <!-- progress -->
+            <circle id="confDonut"
+                    cx="60" cy="60" r="46"
+                    fill="none"
+                    stroke="rgb(var(--ink))"
+                    stroke-linecap="round"
+                    stroke-width="12"
+                    stroke-dasharray="289"
+                    stroke-dashoffset="289"
+                    transform="rotate(-90 60 60)" />
+          </svg>
+
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center leading-tight">
+              <div id="confPct" class="text-xl sm:text-2xl font-black text-slate-900">0%</div>
+              <div class="text-xs sm:text-sm font-semibold text-slate-700">confidence</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick insights (fills space under confidence) -->
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <!-- Urgency card -->
+      <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+        <p class="text-sm font-bold text-slate-700">Urgency</p>
+        {% if pred.urgency == "urgent" %}
+          <p class="mt-2 text-xl font-black text-red-700">Urgent</p>
+          <p class="mt-2 text-base text-slate-800">Get medical advice soon if worsening.</p>
+        {% elif pred.urgency == "soon" %}
+          <p class="mt-2 text-xl font-black text-amber-700">Soon</p>
+          <p class="mt-2 text-base text-slate-800">Monitor; seek care if persistent/spreading.</p>
+        {% else %}
+          <p class="mt-2 text-xl font-black text-emerald-700">Monitor</p>
+          <p class="mt-2 text-base text-slate-800">Basic self-care + monitoring may be enough.</p>
+        {% endif %}
+      </div>
+
+      <!-- Safety card -->
+      <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+        <p class="text-sm font-bold text-slate-700">Safety</p>
+
+        <div class="mt-2 flex flex-wrap gap-2">
+          {% if pred.contagious %}
+            <span class="inline-flex items-center rounded-full bg-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow">
+              Contagious
+            </span>
+          {% else %}
+            <span class="inline-flex items-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-extrabold text-slate-900">
+              Not flagged contagious
+            </span>
+          {% endif %}
+
+          {% if pred.see_doctor %}
+            <span class="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-extrabold text-white shadow">
+              See doctor: Yes
+            </span>
+          {% else %}
+            <span class="inline-flex items-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-extrabold text-slate-900">
+              See doctor: No
+            </span>
+          {% endif %}
+        </div>
+
+        <p class="mt-3 text-base font-semibold text-slate-800">
+          If you feel unwell or symptoms worsen, get checked.
+        </p>
+      </div>
+    </div>
+
+    <!-- store confidence for JS -->
+     
+    <div id="confidenceData" data-confidence="{{ pred.confidence|floatformat:6 }}"></div>
+  </div>
+</div>
+
+    <!-- RIGHT: Details -->
+    <div class="lg:col-span-3 space-y-7">
+
+      <!-- Assessment -->
+      <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+        <h2 class="text-2xl font-black text-slate-900">Assessment</h2>
+        <p class="mt-2 text-base text-slate-700">
+          AI prediction based on the uploaded image.
+        </p>
+
+        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="rounded-3xl border border-black/10 bg-white p-5">
+            <p class="text-sm font-bold text-slate-700">Predicted label</p>
+            <p class="mt-2 text-lg font-black text-slate-900">{{ pred.label }}</p>
+          </div>
+
+          <div class="rounded-3xl border border-black/10 bg-white p-5">
+            <p class="text-sm font-bold text-slate-700">Confidence score</p>
+            <p class="mt-2 text-lg font-black text-slate-900">{{ pred.confidence|floatformat:3 }}</p>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+          <p class="text-base font-extrabold text-slate-900">Recommendation</p>
+          <p class="mt-3 text-base sm:text-lg text-slate-800 leading-relaxed">
+            {{ pred.recommendation }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Guidance -->
+      <div class="grid grid-cols-1 gap-7 lg:grid-cols-2">
+        <!-- Self-care -->
+        <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+          <h3 class="text-xl font-black text-slate-900">Self-care</h3>
+          <p class="mt-2 text-base text-slate-700">Practical steps you can consider.</p>
+
+          <ul class="mt-5 space-y-3 text-base text-slate-800">
+            {% for tip in pred.self_care_json %}
+              <li class="flex gap-3">
+                <span class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-[rgb(var(--skin-300))]"></span>
+                <span class="font-semibold">{{ tip }}</span>
+              </li>
+            {% empty %}
+              <li class="text-slate-700">No self-care tips saved.</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Red flags -->
+        <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+          <h3 class="text-xl font-black text-slate-900">Red flags</h3>
+          <p class="mt-2 text-base text-slate-700">Seek urgent care if you notice any of these.</p>
+
+          <ul class="mt-5 space-y-3 text-base text-slate-800">
+            {% for rf in pred.red_flags_json %}
+              <li class="flex gap-3">
+                <span class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-red-500"></span>
+                <span class="font-semibold">{{ rf }}</span>
+              </li>
+            {% empty %}
+              <li class="text-slate-700">No red flags saved.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Top-3 as a bar chart -->
+      <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 class="text-2xl font-black text-slate-900">Top predictions</h3>
+            <p class="mt-2 text-base text-slate-700">Model probabilities (visualized).</p>
+          </div>
+        </div>
+
+        <!-- Bar chart -->
+        <div class="mt-6 space-y-4">
+          {% for item in pred.top3_json %}
+            <div class="rounded-2xl border border-black/10 bg-white p-4">
+              <div class="flex items-center justify-between gap-4">
+                <div class="text-base font-extrabold text-slate-900 leading-snug">
+                  {{ item.label }}
+                </div>
+                <div class="text-base font-black text-slate-900">
+                  {{ item.p|floatformat:3 }}
+                </div>
+              </div>
+
+              <div class="mt-3 h-4 overflow-hidden rounded-full border border-black/10 bg-[rgb(var(--skin-100))]">
+                <div class="topbar h-full rounded-full bg-slate-900"
+                     data-p="{{ item.p|floatformat:6 }}"
+                     style="width:0%">
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="rounded-3xl border border-black/10 bg-white p-6 text-base font-semibold text-slate-800">
+              No top-3 data saved.
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+        <h3 class="text-xl font-black text-slate-900">Disclaimer</h3>
+        <p class="mt-3 text-base sm:text-lg text-slate-800">
+          This prototype is not medical advice. If you’re concerned, consult a licensed clinician.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

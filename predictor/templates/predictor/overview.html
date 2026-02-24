@@ -1,0 +1,265 @@
+{% extends "predictor/layout.html" %}
+{% load static %}
+{% block title %}Overview - SkinSight{% endblock %}
+
+{% block content %}
+
+<div class="space-y-10">
+
+  <!-- HERO SECTION (full width banner) -->
+  <section class="rounded-[2.25rem] border border-black/10 bg-white/80 backdrop-blur shadow-sm overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+      <!-- Left: copy -->
+      <div class="lg:col-span-7 p-7 sm:p-10">
+        <div class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-4 py-2 text-sm font-extrabold text-slate-900">
+          <span class="h-2.5 w-2.5 rounded-full bg-[rgb(var(--skin-300))]"></span>
+          SkinSight Overview
+        </div>
+
+        <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900">
+          Understand your skin scan in seconds
+        </h1>
+
+        <p class="mt-5 text-lg sm:text-xl font-semibold text-slate-800 leading-relaxed max-w-2xl">
+          SkinSight uses computer vision to classify common skin conditions and provides clear next steps:
+          urgency, contagious flag, self-care, and red-flags.
+        </p>
+
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="{% url 'home' %}"
+             class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-7 py-3.5 text-base font-extrabold text-white shadow-sm hover:bg-slate-800 transition">
+            Start a scan
+          </a>
+
+          {% if request.user.is_authenticated %}
+          <a href="{% url 'history' %}"
+             class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-7 py-3.5 text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+            View history
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}"
+             class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-7 py-3.5 text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+            Login
+          </a>
+          {% endif %}
+        </div>
+
+        <div class="mt-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="rounded-2xl border border-black/10 bg-[rgb(var(--skin-50))] p-4">
+            <div class="text-sm font-extrabold text-slate-900">Confidence</div>
+            <div class="mt-1 text-sm font-semibold text-slate-700">Shows certainty</div>
+          </div>
+          <div class="rounded-2xl border border-black/10 bg-[rgb(var(--skin-50))] p-4">
+            <div class="text-sm font-extrabold text-slate-900">Urgency</div>
+            <div class="mt-1 text-sm font-semibold text-slate-700">Urgent / Soon / Monitor</div>
+          </div>
+          <div class="rounded-2xl border border-black/10 bg-[rgb(var(--skin-50))] p-4">
+            <div class="text-sm font-extrabold text-slate-900">Next steps</div>
+            <div class="mt-1 text-sm font-semibold text-slate-700">Self-care + red flags</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: decorative / infographic slot -->
+      <div class="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-black/10 bg-[rgb(var(--skin-50))] p-7 sm:p-10">
+
+        <div class="mt-0 rounded-3xl border border-dashed border-black/15 bg-white/70 p-4">
+          <!-- Replace with your own image whenever ready -->
+          <img
+            src="{% static 'predictor/girl.png' %}"
+            alt="SkinSight infographic placeholder"
+            class="w-full h-64 sm:h-72 lg:h-80 object-contain rounded-2xl border border-black/10 bg-white"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          />
+          <div style="display:none" class="rounded-2xl bg-white p-6 text-center border border-black/10">
+            <div class="text-base font-extrabold text-slate-900">Add an infographic here</div>
+            <div class="mt-2 text-sm font-semibold text-slate-700">
+              e.g., photo tips, pipeline diagram, or “when to see a doctor”
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-2xl border border-black/10 bg-white p-4">
+          <div class="text-sm font-extrabold text-slate-900">Quick note</div>
+          <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+            This is a prototype and not medical advice. If you’re concerned or symptoms worsen,
+            consult a licensed clinician.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- subtle accent strip -->
+    <div class="h-1.5 w-full bg-gradient-to-r from-[rgb(var(--skin-200))] via-[rgb(var(--skin-100))] to-[rgb(var(--skin-200))]"></div>
+  </section>
+
+
+  <!-- SECTION: HOW IT WORKS -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Image left -->
+    <div class="lg:col-span-5">
+      <div class="h-full rounded-[2.25rem] border border-black/10 bg-white shadow-sm overflow-hidden">
+        <div class="p-6 sm:p-7">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900">How it works</h2>
+            <span class="inline-flex items-center rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-3 py-1 text-xs font-extrabold text-slate-900">
+              3 steps
+            </span>
+          </div>
+
+          <div class="mt-5 rounded-3xl border border-dashed border-black/15 bg-[rgb(var(--skin-50))] p-4">
+            <!-- Swap this image whenever you want -->
+            <img
+              src="{% static 'predictor/boy.png' %}"
+              alt="How it works visual"
+              class="w-full h-64 sm:h-72 lg:h-80 object-contain rounded-2xl border border-black/10 bg-white"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <div style="display:none" class="rounded-2xl bg-white p-6 text-center border border-black/10">
+              <div class="text-base font-extrabold text-slate-900">Image slot</div>
+              <div class="mt-2 text-sm font-semibold text-slate-700">
+                Add a pipeline graphic here (scan → model → results)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps right -->
+    <div class="lg:col-span-7">
+      <div class="rounded-[2.25rem] border border-black/10 bg-white shadow-sm p-6 sm:p-8 h-full">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <h3 class="text-2xl sm:text-3xl font-black text-slate-900">How SkinSight works</h3>
+            <p class="mt-2 text-base font-semibold text-slate-700">
+              A simple flow designed for speed and clarity.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- Step 1 -->
+          <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+            <div class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-white border border-black/10 text-slate-900 font-black">
+              1
+            </div>
+            <div class="mt-4 text-base font-black text-slate-900">Capture / Upload</div>
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              Use your phone camera, laptop webcam, or upload an image from gallery.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+            <div class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-white border border-black/10 text-slate-900 font-black">
+              2
+            </div>
+            <div class="mt-4 text-base font-black text-slate-900">AI Prediction</div>
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              The model classifies the most likely condition and produces probabilities.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+            <div class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-white border border-black/10 text-slate-900 font-black">
+              3
+            </div>
+            <div class="mt-4 text-base font-black text-slate-900">Guidance</div>
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              Shows urgency, contagious flag, self-care tips, and red-flags to watch.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-3xl border border-black/10 bg-white p-5">
+          <div class="text-sm font-extrabold text-slate-900">Pro tip</div>
+          <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+            For best accuracy: bright lighting, sharp focus, and fill the frame with the affected area.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- SECTION: WHY USE SKINSIGHT -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Text left -->
+    <div class="lg:col-span-7 order-2 lg:order-1">
+      <div class="rounded-[2.25rem] border border-black/10 bg-white shadow-sm p-6 sm:p-8 h-full">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-2xl sm:text-3xl font-black text-slate-900">Why use SkinSight?</h3>
+            <p class="mt-2 text-base font-semibold text-slate-700">
+              Built for quick triage, clear communication, and private tracking.
+            </p>
+          </div>
+          <span class="inline-flex items-center rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-4 py-2 text-sm font-extrabold text-slate-900">
+            Skin-tone themed UI
+          </span>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- Benefit 1 -->
+          <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+            <div class="text-base font-black text-slate-900">Clarity</div>
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              Understand urgency and next steps without medical jargon overload.
+            </p>
+          </div>
+
+          <!-- Benefit 2 -->
+          <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+            <div class="text-base font-black text-slate-900">Privacy</div>
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              Each user sees only their own scan history (accounts + login).
+            </p>
+          </div>
+
+          <!-- Benefit 3 -->
+          <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5">
+            <div class="text-base font-black text-slate-900">Tracking</div>
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              Filter results, compare over time, and export CSV for reporting.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-3xl border border-black/10 bg-white p-5">
+            <p class="mt-2 text-sm font-semibold text-slate-700 leading-relaxed">
+              SkinSight keeps your data private.
+            </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image right -->
+    <div class="lg:col-span-5 order-1 lg:order-2">
+      <div class="h-full rounded-[2.25rem] border border-black/10 bg-white shadow-sm overflow-hidden">
+        <div class="p-6 sm:p-7">
+
+          <div class="mt-5 rounded-3xl border border-dashed border-black/15 bg-[rgb(var(--skin-50))] p-4">
+            <img
+              src="{% static 'predictor/poining.png' %}"
+              alt="Why use SkinSight visual"
+              class="w-full h-64 sm:h-72 lg:h-80 object-contain rounded-2xl border border-black/10 bg-white"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <div style="display:none" class="rounded-2xl bg-white p-6 text-center border border-black/10">
+              <div class="text-base font-extrabold text-slate-900">Image slot</div>
+              <div class="mt-2 text-sm font-semibold text-slate-700">
+                Add a “benefits” illustration or app screenshot here.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+{% endblock %}

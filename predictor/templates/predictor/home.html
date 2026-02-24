@@ -1,0 +1,233 @@
+{% extends "predictor/layout.html" %}
+{% load static %}
+{% block title %}SkinSight{% endblock %}
+{% block extra_head %}
+  <script defer src="{% static 'predictor/home.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="w-full">
+  <div class="rounded-3xl border border-black/10 bg-white/85 backdrop-blur p-8 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.08)]">
+    <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <div class="max-w-3xl">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight
+                   bg-gradient-to-r from-orange-500 via-amber-400 to-rose-500
+                   bg-clip-text text-transparent drop-shadow-sm">
+          Scan Skin
+        </h1>
+
+        <p class="mt-4 text-lg sm:text-xl leading-relaxed text-slate-800">
+          Upload an image or capture one using your camera. Get a <span class="font-semibold">confidence score</span>,
+          <span class="font-semibold">urgency badge</span>, and <span class="font-semibold">clear next steps</span>.
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <span class="inline-flex items-center rounded-full bg-[rgb(var(--skin-100))] px-4 py-2 text-sm sm:text-base font-semibold text-slate-900 border border-black/10">
+            Recommendations
+          </span>
+          <span class="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm sm:text-base font-semibold text-slate-900 border border-black/10">
+            Private history per user
+          </span>
+          <span class="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm sm:text-base font-semibold text-slate-900 border border-black/10">
+            Export history CSV
+          </span>
+        </div>
+
+        <div class="mt-7 flex flex-wrap items-center gap-3">
+          <div class="inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-3">
+            <span class="text-xl">🛡️</span>
+            <span class="text-base font-semibold text-slate-900">Your scans are private</span>
+          </div>
+          <div class="inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-3">
+            <span class="text-xl">🧠</span>
+            <span class="text-base font-semibold text-slate-900">AI + guidance</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infographic slot -->
+      <div class="w-full lg:w-[30rem]">
+        <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-base sm:text-lg font-bold text-slate-900">How to take a good photo</p>
+            <span class="text-sm font-semibold text-slate-700">Quick tips</span>
+          </div>
+
+          <div class="mt-4 rounded-2xl border border-black/10 bg-[rgb(var(--skin-50))] p-4">
+            <img src="{% static 'predictor/infographic_photo_tips.png' %}"
+                 alt="Photo tips infographic"
+                 class="w-full h-auto rounded-xl border border-black/10 bg-white"/>
+            <p class="mt-3 text-base text-slate-800">
+              Aim for <span class="font-semibold">bright lighting</span>, <span class="font-semibold">sharp focus</span>, and a
+              <span class="font-semibold">close-up</span> of the affected area.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Main layout -->
+<section class="mt-8 grid grid-cols-1 gap-7 xl:grid-cols-3">
+  <!-- LEFT -->
+  <div class="xl:col-span-2 space-y-7">
+
+    <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+      <form id="scanForm" method="post" enctype="multipart/form-data" class="space-y-7">
+        {% csrf_token %}
+
+        <!-- Upload -->
+        <section id="uploadBlock" class="rounded-3xl border border-black/10 bg-white p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-extrabold text-slate-900">Upload image</h2>
+              <p class="mt-2 text-base sm:text-lg text-slate-800">
+                Choose from gallery (mobile) or files (desktop).
+              </p>
+            </div>
+            <span class="inline-flex items-center rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-4 py-2 text-sm sm:text-base font-bold text-slate-900">
+              Recommended
+            </span>
+          </div>
+
+          <input id="uploadInput" type="file" name="image" accept="image/*" class="hidden" />
+
+          <div class="mt-5 flex flex-wrap items-center gap-4">
+            <label for="uploadInput"
+              class="inline-flex cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white px-6 py-3 text-base font-bold text-slate-900 hover:bg-black/5 transition">
+              📁 Upload Image
+            </label>
+
+            <p class="text-base text-slate-700">
+              Tip: Use a neutral background and avoid heavy filters.
+            </p>
+          </div>
+
+          <div id="uploadPreviewWrap" class="mt-5 hidden">
+            <p class="text-base font-bold text-slate-900">Preview</p>
+            <img id="uploadPreviewImg" alt="Upload preview"
+              class="mt-3 w-full max-w-2xl rounded-3xl border border-black/10 object-cover" />
+          </div>
+        </section>
+
+        <!-- Mobile camera -->
+        <section id="mobileCameraBlock" class="hidden rounded-3xl border border-black/10 bg-white p-6">
+          <h2 class="text-xl font-extrabold text-slate-900">Mobile camera</h2>
+          <p class="mt-2 text-base sm:text-lg text-slate-800">
+            Capture a photo directly with your phone camera.
+          </p>
+
+          <input id="mobileCaptureInput" type="file" accept="image/*" capture="environment" name="mobile_image" class="hidden" />
+
+          <div class="mt-5 flex flex-wrap items-center gap-4">
+            <label for="mobileCaptureInput"
+              class="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-base font-bold text-white hover:bg-slate-800 transition">
+              📷 Capture Photo
+            </label>
+            <p class="text-base text-slate-700">If it opens gallery instead, try again or use Upload.</p>
+          </div>
+
+          <div id="mobilePreviewWrap" class="mt-5 hidden">
+            <p class="text-base font-bold text-slate-900">Preview</p>
+            <img id="mobilePreviewImg" alt="Mobile capture preview"
+              class="mt-3 w-full max-w-2xl rounded-3xl border border-black/10 object-cover" />
+          </div>
+        </section>
+
+        <!-- Webcam -->
+        <section id="webcamBlock" class="hidden rounded-3xl border border-black/10 bg-white p-6">
+          <h2 class="text-xl font-extrabold text-slate-900">Webcam capture</h2>
+          <p class="mt-2 text-base sm:text-lg text-slate-800">
+            Use your laptop webcam to capture an image.
+          </p>
+
+          <video id="video" playsinline autoplay
+                 class="mt-5 w-full max-w-2xl rounded-3xl border border-black/10 bg-black/5"></video>
+
+          <div class="mt-5 flex flex-wrap gap-4">
+            <button type="button" id="startCamBtn"
+              class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-6 py-3 text-base font-bold text-slate-900 hover:bg-black/5 transition">
+              Start Camera
+            </button>
+
+            <button type="button" id="captureBtn" disabled
+              class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-base font-bold text-white hover:bg-slate-800 disabled:opacity-40 transition">
+              Capture
+            </button>
+
+            <button type="button" id="stopCamBtn" disabled
+              class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-6 py-3 text-base font-bold text-slate-900 hover:bg-black/5 disabled:opacity-40 transition">
+              Stop
+            </button>
+          </div>
+
+          <div id="webcamPreviewWrap" class="mt-5 hidden">
+            <p class="text-base font-bold text-slate-900">Preview</p>
+            <img id="webcamPreviewImg" alt="Webcam capture preview"
+              class="mt-3 w-full max-w-2xl rounded-3xl border border-black/10 object-cover" />
+          </div>
+
+          {{ form.captured_image }}
+        </section>
+
+        <!-- Progress -->
+        <section id="progressCard" class="hidden rounded-3xl border border-black/10 bg-white p-6">
+          <p class="text-base">
+            <span class="font-extrabold text-slate-900">Analyzing…</span>
+            <span class="ml-2 font-semibold text-slate-800" id="progressText">Preparing image</span>
+          </p>
+          <div class="mt-4 h-3 overflow-hidden rounded-full border border-black/10 bg-[rgb(var(--skin-100))]">
+            <div id="progressBar" class="h-full w-0 bg-slate-900"></div>
+          </div>
+          <p id="progressPct" class="mt-3 text-base font-semibold text-slate-800">0%</p>
+        </section>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap items-center gap-4">
+          <button type="submit"
+            class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-8 py-4 text-base font-extrabold text-white hover:bg-slate-800 transition">
+            Analyze
+          </button>
+
+          <a href="{% url 'history' %}"
+            class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-8 py-4 text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
+            View History
+          </a>
+
+          <span class="text-base font-semibold text-slate-700">
+            Not medical advice.
+          </span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <aside class="xl:col-span-1 space-y-7">
+
+
+    <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+        <img src="{% static 'predictor/infographic_pipeline.png' %}"
+              alt="Photo tips infographic"
+              class="w-full h-auto rounded-xl border border-black/10 bg-white"/>
+    </div>
+  </aside>
+</section>
+
+<!-- Success overlay -->
+<div id="successOverlay" class="hidden fixed inset-0 z-[9999] bg-black/40">
+  <canvas id="confettiCanvas" class="absolute inset-0 h-full w-full"></canvas>
+  <div class="relative flex h-full w-full items-center justify-center p-6">
+    <div class="w-full max-w-md rounded-3xl border border-black/10 bg-white p-8 text-center shadow-2xl">
+      <div class="text-5xl leading-none">✅</div>
+      <h2 class="mt-4 text-2xl font-extrabold text-slate-900">Scan complete</h2>
+      <p class="mt-2 text-lg font-semibold text-slate-800">Redirecting to your results…</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

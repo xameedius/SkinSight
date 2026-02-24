@@ -1,0 +1,206 @@
+{% extends "predictor/layout.html" %}
+{% block title %}History - SkinSight{% endblock %}
+
+{% block content %}
+
+<div class="space-y-8">
+
+  <!-- Top header -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">History</h1>
+      <p class="mt-2 text-base sm:text-lg font-semibold text-slate-800">
+        Showing <span class="text-slate-900 font-black">{{ filtered_count }}</span>
+        {% if filtered_count != total_count %}
+          of <span class="text-slate-900 font-black">{{ total_count }}</span>
+        {% endif %}
+        results
+      </p>
+      <p class="mt-1 text-base text-slate-700">
+        Filter by label, urgency, contagious cases, and doctor recommendation.
+      </p>
+    </div>
+
+    <a
+      href="{% url 'export_history_csv' %}?label={{ selected_label|urlencode }}&urgency={{ selected_urgency|urlencode }}&doctor={{ selected_doctor|urlencode }}&q={{ search_q|urlencode }}"
+      class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-base font-extrabold text-white shadow-sm hover:bg-slate-800 transition"
+    >
+      Export CSV
+    </a>
+  </div>
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+      <p class="text-sm font-bold text-slate-700">Results shown</p>
+      <p class="mt-2 text-3xl font-black text-slate-900">{{ filtered_count }}</p>
+      <p class="mt-1 text-base text-slate-700">Matches your current filters.</p>
+    </div>
+
+    <div class="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+      <p class="text-sm font-bold text-slate-700">Total scans</p>
+      <p class="mt-2 text-3xl font-black text-slate-900">{{ total_count }}</p>
+      <p class="mt-1 text-base text-slate-700">Stored privately in your account.</p>
+    </div>
+
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-100))] p-6 shadow-sm">
+      <p class="text-sm font-bold text-slate-800">Tip</p>
+      <p class="mt-2 text-lg font-extrabold text-slate-900">Use Search + Urgency</p>
+      <p class="mt-1 text-base text-slate-800">
+        Quickly find urgent/contagious cases.
+      </p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
+    <h2 class="text-xl font-extrabold text-slate-900">Filters</h2>
+    <p class="mt-1 text-base text-slate-700">Narrow down results and export exactly what you need.</p>
+
+    <form method="get" class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-end">
+
+      <!-- Label -->
+      <div class="lg:col-span-4">
+        <label class="text-base font-extrabold text-slate-900">Label</label>
+        <select name="label"
+                class="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10">
+          <option value="">All</option>
+          {% for l in labels %}
+            <option value="{{ l }}" {% if l == selected_label %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Urgency -->
+      <div class="lg:col-span-2">
+        <label class="text-base font-extrabold text-slate-900">Urgency</label>
+        <select name="urgency"
+                class="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10">
+          <option value="">All</option>
+          <option value="urgent" {% if selected_urgency == "urgent" %}selected{% endif %}>Urgent</option>
+          <option value="soon" {% if selected_urgency == "soon" %}selected{% endif %}>Soon</option>
+          <option value="monitor" {% if selected_urgency == "monitor" %}selected{% endif %}>Monitor</option>
+        </select>
+      </div>
+
+      <!-- See doctor -->
+      <div class="lg:col-span-2">
+        <label class="text-base font-extrabold text-slate-900">See a doctor</label>
+        <select name="doctor"
+                class="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10">
+          <option value="">All</option>
+          <option value="yes" {% if selected_doctor == "yes" %}selected{% endif %}>Yes</option>
+          <option value="no" {% if selected_doctor == "no" %}selected{% endif %}>No</option>
+        </select>
+      </div>
+
+      <!-- Search -->
+      <div class="lg:col-span-4">
+        <label class="text-base font-extrabold text-slate-900">Search</label>
+        <input
+          type="text"
+          name="q"
+          value="{{ search_q }}"
+          placeholder="Search label or recommendation…"
+          class="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
+        />
+      </div>
+
+      <!-- Buttons -->
+      <div class="lg:col-span-12 flex flex-wrap items-center gap-4 pt-2">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-7 py-3 text-base font-extrabold text-white hover:bg-slate-800 transition"
+        >
+          Apply Filters
+        </button>
+
+        <a
+          href="{% url 'history' %}"
+          class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-7 py-3 text-base font-extrabold text-slate-900 hover:bg-black/5 transition"
+        >
+          Reset
+        </a>
+
+        <span class="text-base font-semibold text-slate-700">
+          Tip: “Urgent + Contagious” scans should be treated carefully.
+        </span>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Results grid -->
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    {% for p in items %}
+      <a href="{% url 'result' p.id %}"
+         class="group rounded-3xl border border-black/10 bg-white p-5 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition">
+
+        <div class="relative">
+          <img src="{{ p.image.url }}" alt="scan"
+               class="h-48 w-full rounded-3xl border border-black/10 object-cover" />
+
+          <!-- Urgency badge overlay -->
+          <div class="absolute left-4 top-4 flex gap-2">
+            {% if p.urgency == "urgent" %}
+              <span class="rounded-full bg-red-600 px-4 py-2 text-sm font-extrabold text-white shadow">
+                Urgent
+              </span>
+            {% elif p.urgency == "soon" %}
+              <span class="rounded-full bg-amber-500 px-4 py-2 text-sm font-extrabold text-white shadow">
+                Soon
+              </span>
+            {% else %}
+              <span class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-extrabold text-white shadow">
+                Monitor
+              </span>
+            {% endif %}
+
+            {% if p.contagious %}
+              <span class="rounded-full bg-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow">
+                Contagious
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <p class="text-lg font-black text-slate-900 leading-snug">
+            {{ p.label }}
+          </p>
+
+          <p class="mt-2 text-base font-semibold text-slate-800">
+            Confidence: <span class="font-black text-slate-900">{{ p.confidence|floatformat:3 }}</span>
+          </p>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            {% if p.see_doctor %}
+              <span class="inline-flex items-center rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-4 py-2 text-sm font-extrabold text-slate-900">
+                Doctor: Yes
+              </span>
+            {% else %}
+              <span class="inline-flex items-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-extrabold text-slate-900">
+                Doctor: No
+              </span>
+            {% endif %}
+
+            <span class="inline-flex items-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-bold text-slate-700">
+              View details →
+            </span>
+          </div>
+
+          <p class="mt-4 text-base font-semibold text-slate-700">
+            {{ p.created_at }}
+          </p>
+        </div>
+      </a>
+    {% empty %}
+      <div class="rounded-3xl border border-black/10 bg-white p-8 text-lg font-semibold text-slate-800">
+        No history yet. Upload an image first.
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}
