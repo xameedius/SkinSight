@@ -9,14 +9,17 @@ from .views import (
     logout_view,
     overview,
     about,
+    export_result_csv,
 )
 
 urlpatterns = [
     path("", overview, name="overview"),  
     path("scan/", home, name="home"),      
-
     path("about/", about, name="about"),
+
     path("result/<int:pred_id>/", result_page, name="result"),
+    path("result/<int:pred_id>/export.csv", export_result_csv, name="export_result_csv"),
+
     path("history/", history, name="history"),
     path("history/export.csv", export_history_csv, name="export_history_csv"),
 

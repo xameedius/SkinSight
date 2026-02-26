@@ -1,4 +1,3 @@
-# evaluate_skin_model.py
 import json
 import csv
 from pathlib import Path
@@ -19,17 +18,18 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-ART = Path("artifacts")
-DEFAULT_EVAL_DIR = Path("data") / "test"   # <- set to data/val if that's what you have
+# ---- Paths  ----
+ART_DIR = Path("artifacts")
+DEFAULT_EVAL_DIR = Path("data/test")
 
 
-def load_json(p: Path):
-    with open(p, "r", encoding="utf-8") as f:
+def load_json(path: Path):
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
-def val_transforms(img_size: int):
-    # must match val_tfms in training
+def build_eval_transforms(img_size: int):
+    # Must match your val transforms normalization
     return transforms.Compose([
         transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),
@@ -38,35 +38,47 @@ def val_transforms(img_size: int):
     ])
 
 
-def build_model(device: str):
-    meta = load_json(ART / "model_meta.json")
-    class_names = load_json(ART / "class_names.json")
+def load_model(device: str):
+    meta_path = ART_DIR / "model_meta.json"
+    classes_path = ART_DIR / "class_names.json"
+    weights_path = ART_DIR / "skinsight_model.pt"
 
-    model_name = meta["model_name"]
-    img_size = int(meta["img_size"])
+    if not meta_path.exists():
+        raise FileNotFoundError(f"Missing {meta_path}")
+    if not classes_path.exists():
+        raise FileNotFoundError(f"Missing {classes_path}")
+    if not weights_path.exists():
+        raise FileNotFoundError(f"Missing {weights_path}")
+
+    meta = load_json(meta_path)
+    class_names = load_json(classes_path)
+
+    model_name = meta.get("model_name", "tf_efficientnetv2_s")
+    img_size = int(meta.get("img_size", 224))
     num_classes = len(class_names)
 
     model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
-    state_dict = torch.load(ART / "skinsight_model.pt", map_location=device)
-    model.load_state_dict(state_dict)
+    sd = torch.load(weights_path, map_location=device)
+    model.load_state_dict(sd)
     model.to(device)
     model.eval()
 
     return model, class_names, img_size, model_name
 
 
-def plot_cm(cm: np.ndarray, labels, out_path: Path, normalize: bool = False):
-    mat = cm.astype(np.float64)
+def plot_confusion_matrix(cm: np.ndarray, labels, out_path: Path, normalize=False):
     if normalize:
-        row_sums = mat.sum(axis=1, keepdims=True)
-        mat = np.divide(mat, row_sums, out=np.zeros_like(mat), where=row_sums != 0)
+        cm = cm.astype(np.float64)
+        row_sums = cm.sum(axis=1, keepdims=True)
+        cm = np.divide(cm, row_sums, out=np.zeros_like(cm), where=row_sums != 0)
 
     fig = plt.figure(figsize=(12, 10))
     ax = fig.add_subplot(111)
-    im = ax.imshow(mat, interpolation="nearest")
+    im = ax.imshow(cm, interpolation="nearest")
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
 
-    ax.set_title("Confusion Matrix" + (" (Normalized)" if normalize else ""), fontsize=16, fontweight="bold")
+    ax.set_title("Confusion Matrix" + (" (Normalized)" if normalize else ""),
+                 fontsize=16, fontweight="bold")
     ax.set_xlabel("Predicted", fontsize=12)
     ax.set_ylabel("True", fontsize=12)
 
@@ -76,6 +88,7 @@ def plot_cm(cm: np.ndarray, labels, out_path: Path, normalize: bool = False):
     ax.set_yticklabels(labels, fontsize=8)
 
     fig.tight_layout()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=200)
     plt.close(fig)
 
@@ -83,32 +96,30 @@ def plot_cm(cm: np.ndarray, labels, out_path: Path, normalize: bool = False):
 @torch.no_grad()
 def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    ART.mkdir(exist_ok=True)
-
-    # Sanity checks
-    for f in ["skinsight_model.pt", "class_names.json", "model_meta.json"]:
-        if not (ART / f).exists():
-            raise FileNotFoundError(f"Missing artifacts/{f}")
-
-    model, trained_class_names, img_size, model_name = build_model(device)
+    model, class_names, img_size, model_name = load_model(device)
 
     eval_dir = DEFAULT_EVAL_DIR
     if not eval_dir.exists():
         raise FileNotFoundError(
             f"Evaluation directory not found: {eval_dir}\n"
-            f"Create it like: data/test/<class_name>/*.jpg"
+            f"Expected: /content/data/test/<class_name>/*.jpg"
         )
 
-    ds = ImageFolder(eval_dir, transform=val_transforms(img_size))
+    tfm = build_eval_transforms(img_size)
+    ds = ImageFolder(eval_dir, transform=tfm)
 
-    # ⚠️ IMPORTANT: class order must match training order
-    if ds.classes != trained_class_names:
-        print("\n⚠️ WARNING: CLASS ORDER MISMATCH")
-        print("Train classes (class_names.json):", trained_class_names)
-        print("Eval classes  (ImageFolder):     ", ds.classes)
-        print("\nMetrics/confusion matrix will be WRONG unless these match exactly.\n")
+    # Check class order mismatch (IMPORTANT)
+    if ds.classes != class_names:
+        print("⚠️ CLASS ORDER MISMATCH")
+        print("ImageFolder classes:", ds.classes[:5], " ...")
+        print("class_names.json   :", class_names[:5], " ...")
+        print("\nThis can break evaluation and your Django label mapping.\n"
+              "Fix options:\n"
+              "1) Ensure folder names match exactly and order matches training\n"
+              "2) Rebuild test folder to match class_names.json\n"
+              "3) Retrain and regenerate class_names.json from the same folder structure\n")
 
-    loader = DataLoader(ds, batch_size=32, shuffle=False, num_workers=2)
+    loader = DataLoader(ds, batch_size=64, shuffle=False, num_workers=2)
 
     y_true, y_pred, y_conf = [], [], []
 
@@ -135,7 +146,8 @@ def main():
     report = classification_report(y_true, y_pred, target_names=ds.classes, zero_division=0)
     cm = confusion_matrix(y_true, y_pred)
 
-    # Save outputs
+    ART_DIR.mkdir(exist_ok=True)
+
     metrics = {
         "model_name": model_name,
         "img_size": img_size,
@@ -152,13 +164,13 @@ def main():
         "classification_report_text": report,
     }
 
-    with open(ART / "eval_metrics.json", "w", encoding="utf-8") as f:
+    with open(ART_DIR / "eval_metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
 
-    plot_cm(cm, ds.classes, ART / "confusion_matrix.png", normalize=False)
-    plot_cm(cm, ds.classes, ART / "confusion_matrix_norm.png", normalize=True)
+    plot_confusion_matrix(cm, ds.classes, ART_DIR / "confusion_matrix.png", normalize=False)
+    plot_confusion_matrix(cm, ds.classes, ART_DIR / "confusion_matrix_norm.png", normalize=True)
 
-    with open(ART / "eval_predictions.csv", "w", newline="", encoding="utf-8") as f:
+    with open(ART_DIR / "eval_predictions.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["filepath", "true_label", "pred_label", "confidence"])
         for (path, true_idx), pred_idx, conf in zip(ds.samples, y_pred, y_conf):
@@ -166,7 +178,6 @@ def main():
 
     print("\n✅ Evaluation complete")
     print("Model:", model_name)
-    print("Device:", device)
     print("Eval dir:", eval_dir)
     print("Samples:", len(ds))
     print(f"Accuracy: {acc:.4f}")
@@ -174,7 +185,7 @@ def main():
     print(f"Weighted Precision/Recall/F1: {prec_weight:.4f} / {rec_weight:.4f} / {f1_weight:.4f}")
     print("\nClassification report:\n")
     print(report)
-    print("\nSaved to artifacts/:")
+    print("\nSaved to /content/artifacts/")
     print("- eval_metrics.json")
     print("- confusion_matrix.png")
     print("- confusion_matrix_norm.png")
@@ -182,6 +193,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import torch.multiprocessing as mp
-    mp.freeze_support()
     main()

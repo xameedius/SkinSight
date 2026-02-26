@@ -1,27 +1,37 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .ml import predict_pil
-from .models import Prediction
-from PIL import Image
-from .recommendations import get_recommendation_rich
-from django.db.models import Q
-from .models import Prediction
-import csv
 from django.http import HttpResponse
+from django.db.models import Q
 from django.utils import timezone
-from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
-from .forms import SkinImageForm, SignUpForm, LoginForm
-import base64
-import uuid
-from django.core.files.base import ContentFile
-from PIL import Image
-from django.contrib.auth import authenticate
+from django.contrib.auth import login, authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.core.files.base import ContentFile
+
+from .models import Prediction
+from .forms import SkinImageForm, SignUpForm, LoginForm
+from .ml import predict_pil
+from .recommendations import get_recommendation_rich
+
+from PIL import Image
+from pathlib import Path
+import base64
+import uuid
+import json
+import csv
 
 def overview(request):
-    return render(request, "predictor/overview.html")
+    class_names = []
+    try:
+        with open(Path("artifacts") / "class_names.json") as f:
+            class_names = json.load(f)
+    except:
+        pass
+
+    return render(request, "predictor/overview.html", {
+        "class_names": class_names
+    })
 
 def about(request):
     return render(request, "predictor/about.html")
@@ -75,6 +85,69 @@ def home(request):
 def result_page(request, pred_id):
     pred = get_object_or_404(Prediction, id=pred_id, user=request.user)
     return render(request, "predictor/result.html", {"pred": pred})
+
+@login_required
+def export_result_csv(request, pred_id):
+    """
+    Export a single Prediction as a CSV "Pre-Diagnostic Report".
+    Only allows exporting the logged-in user's own prediction.
+    """
+    pred = get_object_or_404(Prediction, id=pred_id, user=request.user)
+
+    stamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"skinsight_report_{pred.id}_{stamp}.csv"
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    writer = csv.writer(response)
+
+    # Header
+    writer.writerow(["SkinSight Pre-Diagnostic Report"])
+    writer.writerow(["Report generated", timezone.now().isoformat()])
+    writer.writerow([])
+
+    # Core fields
+    writer.writerow(["Prediction ID", pred.id])
+    writer.writerow(["Created at", pred.created_at.isoformat() if pred.created_at else ""])
+    writer.writerow(["Predicted label", pred.label])
+    writer.writerow(["Confidence", f"{pred.confidence:.6f}"])
+    writer.writerow(["Urgency", pred.urgency])
+    writer.writerow(["Contagious", "yes" if pred.contagious else "no"])
+    writer.writerow(["See a doctor", "yes" if pred.see_doctor else "no"])
+    writer.writerow([])
+
+    # Recommendation text
+    writer.writerow(["Recommendation"])
+    writer.writerow([(pred.recommendation or "").replace("\n", " ").strip()])
+    writer.writerow([])
+
+    # Self-care tips
+    writer.writerow(["Self-care tips"])
+    for tip in (pred.self_care_json or []):
+        writer.writerow([tip])
+    writer.writerow([])
+
+    # Red flags
+    writer.writerow(["Red flags"])
+    for rf in (pred.red_flags_json or []):
+        writer.writerow([rf])
+    writer.writerow([])
+
+    # Top-3
+    writer.writerow(["Top predictions"])
+    writer.writerow(["Label", "Probability"])
+    for item in (pred.top3_json or []):
+        # item can be dict-like: {"label": "...", "p": 0.123}
+        try:
+            writer.writerow([item.get("label", ""), f"{float(item.get('p', 0)):.6f}"])
+        except Exception:
+            writer.writerow([str(item), ""])
+    writer.writerow([])
+
+    # Image URL (useful)
+    writer.writerow(["Image URL", pred.image.url if pred.image else ""])
+
+    return response
 
 @login_required
 def history(request):

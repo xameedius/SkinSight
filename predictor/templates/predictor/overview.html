@@ -260,6 +260,151 @@
     </div>
   </section>
 
+  <!-- SECTION: 23 Detectable Skin Conditions -->
+<section class="rounded-[2.25rem] border border-black/10 bg-white shadow-sm p-7 sm:p-10">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div>
+      <h2 class="text-3xl font-black tracking-tight text-slate-900">
+        🤒 23 Detectable Skin Conditions
+      </h2>
+      <p class="mt-2 text-base sm:text-lg font-semibold text-slate-700">
+        The model is trained to classify 23 different dermatological categories.
+      </p>
+    </div>
+
+    <span class="inline-flex items-center rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-4 py-2 text-sm font-extrabold text-slate-900">
+      Multi-class AI model
+    </span>
+  </div>
+
+  <!-- Disease Grid -->
+  <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    {% for disease in class_names %}
+      <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-5 flex items-center justify-center text-center">
+        <div class="text-sm font-extrabold text-slate-900 leading-snug">
+          {{ disease }}
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-span-full text-base font-semibold text-slate-700 text-center">
+        Class names not loaded.
+      </div>
+    {% endfor %}
+
+  </div>
+
+  <div class="mt-8 rounded-3xl border border-black/10 bg-white p-5">
+    <p class="text-sm font-semibold text-slate-700 leading-relaxed">
+      Some conditions share visual similarities, which can lead to confusion between closely related classes.
+      Performance varies per category and is shown in the evaluation section of this project.
+    </p>
+  </div>
+</section>
+
+<!-- SECTION: Core Features -->
+<section class="rounded-[2.25rem] border border-black/10 bg-white shadow-sm p-7 sm:p-10">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div>
+      <h2 class="text-3xl font-black tracking-tight text-slate-900">
+        ⭐ Core Features of SkinSight
+      </h2>
+      <p class="mt-2 text-base sm:text-lg font-semibold text-slate-700">
+        A complete AI-powered health support prototype.
+      </p>
+    </div>
+
+    <span class="inline-flex items-center rounded-full border border-black/10 bg-[rgb(var(--skin-100))] px-4 py-2 text-sm font-extrabold text-slate-900">
+      Feature Overview
+    </span>
+  </div>
+
+  <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Feature 1 -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+      <h3 class="text-xl font-black text-slate-900">
+        🔍 AI Skin Disease Detection
+      </h3>
+      <ul class="mt-4 space-y-2 text-sm font-semibold text-slate-700 leading-relaxed">
+        <li>🔸 Scan or upload a skin image</li>
+        <li>🔸 Deep learning model analyzes image</li>
+        <li>🔸 Identifies most likely condition from 23 classifications</li>
+        <li>🔸 Provides prediction with confidence score</li>
+      </ul>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+      <h3 class="text-xl font-black text-slate-900">
+        👤 Personal User Accounts
+      </h3>
+      <ul class="mt-4 space-y-2 text-sm font-semibold text-slate-700 leading-relaxed">
+        <li>🔸 Secure account creation</li>
+        <li>🔸 Easy Login</li>
+      </ul>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+      <h3 class="text-xl font-black text-slate-900">
+        📁 History & Progress Tracking
+      </h3>
+      <ul class="mt-4 space-y-2 text-sm font-semibold text-slate-700 leading-relaxed">
+        <li>🔸 Automatic storage of past scans</li>
+        <li>🔸 Dedicated History page per user</li>
+        <li>🔸 Monitor condition progression over time</li>
+      </ul>
+    </div>
+
+    <!-- Feature 4 -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+      <h3 class="text-xl font-black text-slate-900">
+        📊 Health Insights & Smart Recommendations
+      </h3>
+      <ul class="mt-4 space-y-2 text-sm font-semibold text-slate-700 leading-relaxed">
+        <li>🔸 Detailed result page for each scan</li>
+        <li>🔸 Indicates if medical attention is recommended</li>
+        <li>🔸 Urgency level (monitor / soon / urgent)</li>
+        <li>🔸 Highlights important red flags</li>
+        <li>🔸 AI confidence score for transparency</li>
+      </ul>
+    </div>
+
+    <!-- Feature 5 -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+      <h3 class="text-xl font-black text-slate-900">
+        🧾 Exportable Scan History (CSV)
+      </h3>
+      <ul class="mt-4 space-y-2 text-sm font-semibold text-slate-700 leading-relaxed">
+        <li>🔸 Download full scan history as CSV</li>
+        <li>🔸 Offline access to records</li>
+        <li>🔸 Shareable summary for consultation</li>
+      </ul>
+    </div>
+
+    <!-- Feature 6 -->
+    <div class="rounded-3xl border border-black/10 bg-[rgb(var(--skin-50))] p-6">
+      <h3 class="text-xl font-black text-slate-900">
+        📝 Exportable Pre-Diagnostic Report (CSV)
+      </h3>
+      <ul class="mt-4 space-y-2 text-sm font-semibold text-slate-700 leading-relaxed">
+        <li>🔸 Download your result as a CSV file.</li>
+        <li>🔸 Can be used as a pre-diagonostic summary before visiting a dermatologist.</li>
+        <li>🔸 Helps support more informed medical consultations.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="mt-8 rounded-3xl border border-black/10 bg-white p-5">
+    <p class="text-sm font-semibold text-slate-700 leading-relaxed">
+      Together, these features demonstrate a full AI-to-application pipeline —
+      combining deep learning, backend engineering, and modern user experience design.
+    </p>
+  </div>
+</section>
+
 </div>
 
 {% endblock %}

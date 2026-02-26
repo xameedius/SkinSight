@@ -1,1 +1,5 @@
-{"model_name": "efficientnet_b0", "img_size": 224}
+{
+  "model_name": "tf_efficientnetv2_s",
+  "img_size": 320,
+  "num_classes": 23
+}

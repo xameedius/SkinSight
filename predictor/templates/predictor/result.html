@@ -35,6 +35,11 @@
          class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-6 py-3 text-base font-extrabold text-slate-900 hover:bg-black/5 transition">
         History
       </a>
+
+      <a href="{% url 'export_result_csv' pred.id %}"
+        class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-base font-extrabold text-white shadow-sm hover:bg-slate-800 transition">
+        Export Result (CSV)
+      </a>
     </div>
   </div>
 
