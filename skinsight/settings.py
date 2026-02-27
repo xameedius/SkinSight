@@ -3,13 +3,15 @@ from pathlib import Path
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-PORT = '0.0.0.0:8000'
+
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = [".onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*",".onrender.com", "localhost", "127.0.0.1", "0.0.0.0", "0.0.0.0:8000"]
+HOST = '0.0.0.0'
+PORT = int(os.environ.get('PORT', 10000))
 
 INSTALLED_APPS = [
     "predictor",
