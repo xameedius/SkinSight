@@ -15,7 +15,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "skinsight.online"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "skinsight.online", ".onrender.com"]
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)  # e.g. yourapp.onrender.com
@@ -70,11 +70,9 @@ WSGI_APPLICATION = 'skinsight.wsgi.application'
 # DATABASE
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
-    db_config = dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
-    # Only enforce SSL in production environments (Render sets this hostname)
-    if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
-        db_config["OPTIONS"] = {"sslmode": "require"}
-    DATABASES = {"default": db_config}
+    DATABASES = {
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+    }
 else:
     DATABASES = {
         "default": {
@@ -82,7 +80,6 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
