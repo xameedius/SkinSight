@@ -63,18 +63,6 @@ It is designed as an academic prototype for AI-assisted medical triage support.
 
 ---
 
-# Project Structure (Typical)
-SkinSight/
-├─ manage.py
-├─ artifacts/
-├─ predictor/
-├─ skinsight/
-├─ requirements.txt
-├─ train_skin_model.py
-├─ data/
-
-
----
 
 # Setup Instructions (Clone & Run)
 
@@ -88,45 +76,45 @@ SkinSight/
 ## 1 Clone the repository
 
 
-- git clone https://github.com/xameedius/SkinSight.git
-- cd SkinSight
-- git clone https://github.com/xameedius/SkinSight.git
-- cd SkinSight
+git clone https://github.com/xameedius/SkinSight.git
+cd SkinSight
+git clone https://github.com/xameedius/SkinSight.git
+cd SkinSight
 
 2) Create and activate a virtual environment
-- python -m venv .venv
-- .\.venv\Scripts\Activate.ps1
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 
 3) Install dependencies
-- pip install -r requirements.txt
+pip install -r requirements.txt
 
 4) Apply database migrations
-- python manage.py migrate
+python manage.py migrate
 
 5) Run the development server
-- python manage.py runserver
+python manage.py runserver
 
-- Open browser:
-- http://127.0.0.1:8000/
+Open browser:
+http://127.0.0.1:8000/
 
 ---
 
 ## Features Checklist
 
-- ✔ Upload image (desktop / mobile gallery)
-- ✔ Mobile camera capture
-- ✔ Laptop webcam capture
-- ✔ Prediction label + confidence
-- ✔ Urgency classification
-- ✔ Contagious detection flag
-- ✔ Doctor recommendation
-- ✔ Self-care guidance
-- ✔ Red flag warnings
-- ✔ User authentication
-- ✔ Private scan history
-- ✔ History filtering
-- ✔ CSV export
-- ✔ Modern responsive UI
+✔ Upload image (desktop / mobile gallery)
+✔ Mobile camera capture
+✔ Laptop webcam capture
+✔ Prediction label + confidence
+✔ Urgency classification
+✔ Contagious detection flag
+✔ Doctor recommendation
+✔ Self-care guidance
+✔ Red flag warnings
+✔ User authentication
+✔ Private scan history
+✔ History filtering
+✔ CSV export
+✔ Modern responsive UI
 
 ---
 
