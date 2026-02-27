@@ -20,14 +20,14 @@ It provides:
 
 # What SkinSight Does
 
-SkinSight allows users to upload a skin image (or capture one using webcam / mobile camera) and runs a deep learning model to identify a likely condition category.
+- SkinSight allows users to upload a skin image (or capture one using webcam / mobile camera) and runs a deep learning model to identify a likely condition category.
 
-The application demonstrates a complete end-to-end machine learning pipeline:
+- The application demonstrates a complete end-to-end machine learning pipeline:
 
-Dataset → Model Training → Model Inference → Web Interface → User History → Exportable Results
+- Dataset → Model Training → Model Inference → Web Interface → User History → Exportable Results
 
-It is designed as an academic prototype for AI-assisted medical triage support.
-
+- It is designed as an academic prototype for AI-assisted medical triage support.
+ 
 ---
 
 # Technical Specifications
@@ -64,57 +64,51 @@ It is designed as an academic prototype for AI-assisted medical triage support.
 ---
 
 
-# Setup Instructions (Clone & Run)
-
-## 1 Clone the repository
-
-
----
+## Setup Instructions (Clone & Run)
 
 # Setup Instructions (Clone & Run)
 
-## 1 Clone the repository
+# 1 Clone the repository
 
+- git clone https://github.com/xameedius/SkinSight.git
+- cd SkinSight
+- git clone https://github.com/xameedius/SkinSight.git
+- cd SkinSight
 
-git clone https://github.com/xameedius/SkinSight.git
-cd SkinSight
-git clone https://github.com/xameedius/SkinSight.git
-cd SkinSight
-
-2) Create and activate a virtual environment
+# 2 Create and activate a virtual environment
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+- .\.venv\Scripts\Activate.ps1
 
-3) Install dependencies
-pip install -r requirements.txt
+# 3 Install dependencies
+- pip install -r requirements.txt
 
-4) Apply database migrations
-python manage.py migrate
+# 4 Apply database migrations
+- python manage.py migrate
 
-5) Run the development server
-python manage.py runserver
+# 5 Run the development server
+- python manage.py runserver
 
-Open browser:
-http://127.0.0.1:8000/
+- Open browser:
+- http://127.0.0.1:8000/
 
 ---
 
 ## Features Checklist
 
-✔ Upload image (desktop / mobile gallery)
-✔ Mobile camera capture
-✔ Laptop webcam capture
-✔ Prediction label + confidence
-✔ Urgency classification
-✔ Contagious detection flag
-✔ Doctor recommendation
-✔ Self-care guidance
-✔ Red flag warnings
-✔ User authentication
-✔ Private scan history
-✔ History filtering
-✔ CSV export
-✔ Modern responsive UI
+- ✔ Upload image (desktop / mobile gallery)
+- ✔ Mobile camera capture
+- ✔ Laptop webcam capture
+- ✔ Prediction label + confidence
+- ✔ Urgency classification
+- ✔ Contagious detection flag
+- ✔ Doctor recommendation
+- ✔ Self-care guidance
+- ✔ Red flag warnings
+- ✔ User authentication
+- ✔ Private scan history
+- ✔ History filtering
+- ✔ CSV export
+- ✔ Modern responsive UI
 
 ---
 
