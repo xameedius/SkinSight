@@ -9,9 +9,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = ["*",".onrender.com", "localhost", "127.0.0.1", "0.0.0.0", "0.0.0.0:8000"]
-HOST = '0.0.0.0'
-PORT = int(os.environ.get('PORT', 10000))
+ALLOWED_HOSTS = ["*"]
+
 
 INSTALLED_APPS = [
     "predictor",
@@ -24,7 +23,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -54,7 +52,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "skinsight.wsgi.application"
 
 DATABASES = {
-    "default": dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=0,  
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -72,7 +73,6 @@ USE_I18N = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = []  
 
 MEDIA_URL = "/media/"
