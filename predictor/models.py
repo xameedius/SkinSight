@@ -15,7 +15,7 @@ class Prediction(models.Model):
     confidence = models.FloatField()
     top3_json = models.JSONField(null=True, blank=True)
 
-    # Rich recommendations (NEW)
+    # recommendations 
     urgency = models.CharField(max_length=10, default="monitor")  # urgent|soon|monitor
     contagious = models.BooleanField(default=False)
     see_doctor = models.BooleanField(default=False)
