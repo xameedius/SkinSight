@@ -18,9 +18,9 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-# ---- Paths  ----
-ART_DIR = Path("artifacts")
-DEFAULT_EVAL_DIR = Path("data/test")
+# ---- Paths (Colab) ----
+ART_DIR = Path("/content/artifacts")
+DEFAULT_EVAL_DIR = Path("/content/data/test")
 
 
 def load_json(path: Path):
